@@ -262,7 +262,13 @@ section[data-testid="stSidebar"] [data-testid="stPills"] button[data-testid="stB
 
 /* toggle */
 [data-testid="stSegmentedControl"] { margin:.1rem 0 .25rem 0; }
-[data-testid="stSegmentedControl"] button { padding:.12rem .6rem; min-height:0; }
+[data-testid="stSegmentedControl"] button { padding:.12rem .6rem; min-height:0; background:#fff !important;
+  border:1px solid __LINE__ !important; color:__INK__ !important; }
+[data-testid="stSegmentedControl"] button p { color:inherit !important; }
+[data-testid="stSegmentedControl"] button[kind="segmented_controlActive"],
+[data-testid="stSegmentedControl"] button[aria-checked="true"],
+[data-testid="stSegmentedControl"] button[data-testid="stBaseButton-segmented_controlActive"] {
+  background:__BLUSH__ !important; border-color:__PRIMARY__ !important; color:__PRIMARY__ !important; }
 [data-testid="stSegmentedControl"] button p { font-size:.82rem !important; }
 </style>
 """
@@ -350,7 +356,7 @@ def plot(fig, legend=None, margin=None, key=None, select=None):
         paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
         font=dict(family=FONT, size=12, color=INK), bargap=0.3,
         legend=dict(orientation="h", yanchor="bottom", y=1.0, xanchor="left",
-                    x=0, font=dict(size=12)),
+                    x=0, font=dict(size=12, color=INK)),
         legend_title_text="",
         hoverlabel=dict(bgcolor="white", bordercolor=PINK2,
                         font=dict(family=FONT, color=INK, size=13)))
@@ -365,7 +371,7 @@ def plot(fig, legend=None, margin=None, key=None, select=None):
     if legend:
         fig.update_layout(legend=legend)
     _n[0] += 1
-    kw = {"config": {"displayModeBar": False}, "key": key or f"pc{_n[0]}"}
+    kw = {"config": {"displayModeBar": False}, "key": key or f"pc{_n[0]}", "theme": None}
     modes = [dict(on_select=select, selection_mode="points"), {}] if select \
         else [{}]
     for sm in modes:
