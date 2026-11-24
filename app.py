@@ -48,9 +48,9 @@ TIPE = ["Kombinasi", "Berminyak", "Sensitif", "Kering", "Normal"]
 TIPE_COL = [PRIMARY, PEACH, PLUM, TEAL, GOLD]
 KELUHAN = ["Kulit Kusam", "Jerawat", "Pori Besar", "Komedo",
            "Kantung Mata", "Flek", "Stretch Mark"]
-LAMA = [("< 1 minggu", "&lt;1 mgg"), ("1 minggu - 1 bulan", "1-4 mgg"),
-        ("1-3 bulan", "1-3 bln"), ("3-6 bulan", "3-6 bln"),
-        ("6 bulan - 1 tahun", "6-12 bln"), ("> 1 tahun", "&gt;1 th")]
+LAMA = [("< 1 minggu", "&lt;1<br>mgg"), ("1 minggu - 1 bulan", "1-4<br>mgg"),
+        ("1-3 bulan", "1-3<br>bln"), ("3-6 bulan", "3-6<br>bln"),
+        ("6 bulan - 1 tahun", "6-12<br>bln"), ("> 1 tahun", "&gt;1<br>th")]
 SHORT = {"Kepuasan Konsumen": "Kepuasan", "Durasi Penggunaan": "Durasi pakai",
          "Rekomendasi Produk": "Rekomendasi",
          "Niat Pembelian Ulang": "Niat beli ulang"}
@@ -1163,20 +1163,26 @@ def page_model():
                     k2 = kp[(kp["peran"] == "Aktif") & (kp["dimensi"] <= 2)]
                     pv = k2.pivot_table(index="peubah", columns="dimensi",
                                         values="kontribusi_persen")
-                    pv = pv.sort_values(1).tail(8)
+                    pv = pv.fillna(0)
+                    pv["tot"] = pv[1] + pv[2]
+                    pv = pv.sort_values("tot").tail(8)
+                    nama = pv.index.str.replace("_", " ")
                     fig = go.Figure()
-                    fig.add_bar(name="Dim1", y=pv.index.str.replace("_", " "),
+                    fig.add_bar(name="Dim1 (kepuasan)", y=nama,
                                 x=pv[1].round(1), orientation="h",
-                                marker_color=PRIMARY)
-                    fig.add_bar(name="Dim2", y=pv.index.str.replace("_", " "),
+                                marker_color=PRIMARY,
+                                hovertemplate="%{y}, Dim1: %{x}%<extra></extra>")
+                    fig.add_bar(name="Dim2 (niat beli)", y=nama,
                                 x=pv[2].round(1), orientation="h",
-                                marker_color=PRIMARY)
-                    fig.update_layout(barmode="group")
-                    fig.update_xaxes(title="Kontribusi (%)", showgrid=True,
-                                     gridcolor=LINE)
+                                marker_color=PLUM,
+                                hovertemplate="%{y}, Dim2: %{x}%<extra></extra>")
+                    fig.update_layout(barmode="stack", bargap=0.3)
+                    fig.update_yaxes(dtick=1, tickfont=dict(size=11, color=INK))
+                    fig.update_xaxes(title="", showgrid=True, gridcolor=LINE,
+                                     ticksuffix="%")
                     plot(fig)
-                    result("Dimensi 1 dibentuk <b>rating</b> dan sub-rating. "
-                           "Niat beli ulang ikut sebagai peubah aktif.")
+                    result("Panjang batang = sumbangan peubah ke dimensi 1 (pink) dan "
+                           "dimensi 2 (ungu). <b>Rating</b> dan sub-rating membentuk dimensi 1.")
         m2 = st.columns(2, gap="small")
         # ---------------- association
         with m2[0]:
