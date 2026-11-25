@@ -191,16 +191,37 @@ section[data-testid="stSidebar"] [data-testid="stPills"] button[data-testid="stB
 .res b { color:__PRIMARY__; }
 
 /* kpi */
-.kpi { position:relative; height:6.4rem; background:#fff; border:1px solid __LINE__; border-radius:1.1rem;
-  padding:.8rem 1.1rem; box-sizing:border-box; box-shadow:0 1px 3px rgba(60,20,30,.05); overflow:hidden; }
+.kpi { position:relative; display:block; height:6.4rem; border:1px solid __LINE__; border-radius:1.1rem;
+  background:linear-gradient(135deg,var(--t1) 0%,#fff 78%); box-sizing:border-box;
+  box-shadow:0 1px 3px rgba(60,20,30,.05); }
+.kpi > summary { list-style:none; cursor:pointer; display:block; height:100%; box-sizing:border-box;
+  padding:.8rem 1.1rem; border-radius:1.1rem; position:relative; overflow:hidden; }
+.kpi > summary::-webkit-details-marker { display:none; }
+.kpi > summary::before { content:""; position:absolute; left:0; top:.9rem; bottom:.9rem; width:.28rem;
+  border-radius:0 .3rem .3rem 0; background:var(--t2); }
+.kpi > summary:focus-visible { outline:2px solid __PRIMARY__; outline-offset:2px; }
+.kpi .kl::after { content:"i"; display:inline-grid; place-items:center; width:.95rem; height:.95rem; margin-left:.35rem;
+  border-radius:50%; border:1px solid var(--t2); color:var(--t2); font-size:.62rem; font-style:italic; vertical-align:.08rem; }
+.kpi[open] { z-index:40; box-shadow:0 14px 34px rgba(60,20,30,.16); border-color:var(--t2); }
+.kpi .kpop { position:absolute; left:0; right:0; top:calc(100% + .35rem); z-index:41; box-sizing:border-box;
+  background:#fff; border:1px solid var(--t2); border-radius:.9rem; padding:.7rem .9rem; font-size:.84rem;
+  line-height:1.4; color:__INK__; box-shadow:0 14px 34px rgba(60,20,30,.18); animation:pop .16s ease-out; }
+.kpi .kpop b { color:var(--t2); }
+@keyframes pop { from { opacity:0; transform:translateY(-4px); } to { opacity:1; transform:none; } }
+.kpi.t0 { --t1:#FDE3EA; --t2:#E23B5E; } .kpi.t1 { --t1:#FFE8DA; --t2:#D9662F; }
+.kpi.t2 { --t1:#EDE4F7; --t2:#6D4C9F; } .kpi.t3 { --t1:#D9F0EF; --t2:#1F8A8A; }
+.kpi.t4 { --t1:#F6ECD3; --t2:#8A6A20; }
+.kring { position:absolute; right:.9rem; top:.75rem; width:2.5rem; height:2.5rem; border-radius:50%; display:grid; place-items:center;
+  background:conic-gradient(var(--t2) calc(var(--p) * 1%), rgba(255,255,255,.7) 0); }
+.kring::after { content:""; width:1.75rem; height:1.75rem; border-radius:50%; background:#fff; }
 .kl { font-size:.84rem; font-weight:700; color:__MUTED__;
   white-space:nowrap; }
-.kico { position:absolute; right:.9rem; top:.8rem; width:2.1rem; height:2.1rem; border-radius:50%; background:__BLUSH__;
+.kico { position:absolute; right:.9rem; top:.8rem; width:2.1rem; height:2.1rem; border-radius:50%; background:rgba(255,255,255,.75);
   display:grid; place-items:center; }
 .kico svg { width:1.15rem; height:1.15rem; }
 .kv { font-family:'Playfair Display',serif; font-size:2rem; line-height:1.15; color:__INK__; margin-top:.1rem; }
 .kv small { font-family:'Lato',sans-serif; font-size:.95rem; color:__MUTED__; margin-left:.2rem; }
-.ks { font-size:.8rem; color:__PRIMARY__; font-weight:700; white-space:nowrap; }
+.ks { font-size:.8rem; color:var(--t2); font-weight:700; white-space:nowrap; }
 
 /* kotak insight bergambar */
 .ins { position:relative; overflow:hidden; box-sizing:border-box; height:calc(100vh - __CHROME__);
@@ -270,6 +291,65 @@ section[data-testid="stSidebar"] [data-testid="stPills"] button[data-testid="stB
 [data-testid="stSegmentedControl"] button[data-testid="stBaseButton-segmented_controlActive"] {
   background:__BLUSH__ !important; border-color:__PRIMARY__ !important; color:__PRIMARY__ !important; }
 [data-testid="stSegmentedControl"] button p { font-size:.82rem !important; }
+
+/* ---------- penjelasan kartu (klik judul) ---------- */
+.cd { position:relative; }
+.cd > summary { list-style:none; cursor:pointer; position:relative; }
+.cd > summary::-webkit-details-marker { display:none; }
+.cd > summary:hover .ct { color:__PRIMARY__; }
+.cd > summary:focus-visible { outline:2px solid __PRIMARY__; outline-offset:3px; border-radius:.4rem; }
+.cinfo { position:absolute; right:0; top:.45rem; width:1.25rem; height:1.25rem; border-radius:50%; display:grid; place-items:center;
+  border:1px solid __PRIMARY__; color:__PRIMARY__; font-size:.78rem; font-style:italic; font-family:'Playfair Display',serif;
+  background:#fff; transition:background .15s ease, color .15s ease; }
+.cd[open] .cinfo, .cd > summary:hover .cinfo { background:__PRIMARY__; color:#fff; }
+.cins { position:absolute; left:-.2rem; right:-.2rem; top:calc(100% + .1rem); z-index:30; box-sizing:border-box;
+  height:calc(var(--row) - 6.2rem); overflow:auto; padding:.8rem 1rem;
+  background:linear-gradient(160deg,#FFF3F6 0%,#fff 70%); border:1px solid __PINK2__; border-radius:.9rem;
+  box-shadow:0 12px 28px rgba(226,59,94,.16); font-size:.82rem; line-height:1.42; color:__INK__;
+  animation:pop .16s ease-out; }
+.cins p { margin:0 0 .55rem 0; } .cins b { color:__PRIMARY__; }
+.chint { color:__MUTED__; font-size:.74rem; margin-top:.2rem; }
+
+/* ---------- responsif (titik putus: 1279, 1023, 767, 560 px) ---------- */
+@media (max-width: 1279px), (max-height: 560px) {
+  html { font-size:clamp(13px, 0.9vw + 6px, 16px) !important; }
+  :root { --row:27rem !important; }
+  [data-testid="stMain"], section.main { overflow-y:auto !important; overflow-x:hidden !important; }
+  .block-container { padding:1rem 1.2rem 3rem 1.2rem !important; }
+  [data-testid="stHorizontalBlock"] { flex-wrap:wrap !important; }
+  [data-testid="stHorizontalBlock"] > [data-testid="stColumn"] { flex:1 1 18rem !important; min-width:min(100%,18rem) !important; }
+  [data-testid="stHorizontalBlock"] > [data-testid="stColumn"]:has(.ins) { flex:1 1 100% !important; }
+  [data-testid="stHorizontalBlock"] > [data-testid="stColumn"]:has(.kpi) { flex:1 1 10rem !important; min-width:min(100%,10rem) !important; }
+  [data-testid="stHorizontalBlock"] > [data-testid="stColumn"]:has(.stat) { flex:1 1 15rem !important; }
+  .hdr { height:auto; } .sub { white-space:normal; }
+  .chips { height:auto; justify-content:flex-start; flex-wrap:wrap; margin-bottom:.5rem; }
+  .ins { height:auto; min-height:0; }
+  .ins-pill { margin-top:1rem; }
+  .ct, .cs { white-space:normal; }
+  .chead { height:auto; min-height:3.1rem; }
+  [data-testid="stSegmentedControl"] button, section[data-testid="stSidebar"] [data-testid="stPills"] button { min-height:2.3rem; }
+  .stApp button, .stApp [role="button"] { touch-action:manipulation; }
+}
+@media (max-width: 1023px) {
+  .ttl { font-size:2.6rem; }
+  [data-testid="stHorizontalBlock"] > [data-testid="stColumn"] { flex:1 1 20rem !important; }
+  .ins-how { display:grid; grid-template-columns:repeat(auto-fit,minmax(15rem,1fr)); gap:1rem; }
+}
+@media (max-width: 767px) {
+  .block-container { padding:.8rem 1rem 3rem 1rem !important; }
+  .ttl { font-size:2.1rem; }
+  [data-testid="stHorizontalBlock"] > [data-testid="stColumn"] { flex:1 1 100% !important; min-width:100% !important; }
+  [data-testid="stHorizontalBlock"] > [data-testid="stColumn"]:has(.kpi) { flex:1 1 calc(50% - .5rem) !important; min-width:calc(50% - .5rem) !important; }
+  :root { --row:28rem !important; }
+}
+@media (max-width: 560px) {
+  .chip { min-width:0; flex:1; padding:.4rem .6rem; }
+  .kpi .kv { font-size:1.7rem; } .kring { display:none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { transition:none !important; animation:none !important; }
+}
+.stApp button:focus-visible, .stApp summary:focus-visible { outline:2px solid __PRIMARY__ !important; outline-offset:2px; }
 </style>
 """
 for k, v in {"__BG__": BG, "__INK__": INK, "__GAP__": GAPR, "__CHROME__": CHROME,
@@ -394,10 +474,20 @@ def card(kind):
             continue
 
 
-def card_head(title, sub=""):
-    st.markdown(f'<div class="chead"><div class="cbar"></div>'
-                f'<div class="ct">{title}</div><div class="cs">{sub}</div>'
-                f'</div>', unsafe_allow_html=True)
+def card_head(title, sub="", ins=""):
+    """Judul kartu. Kalau ada `ins`, judul bisa diklik untuk membuka penjelasan."""
+    if not ins:
+        st.markdown(f'<div class="chead"><div class="cbar"></div>'
+                    f'<div class="ct">{title}</div><div class="cs">{sub}</div>'
+                    f'</div>', unsafe_allow_html=True)
+        return
+    paras = "".join(f"<p>{p}</p>" for p in ins.split("\n"))
+    st.markdown(
+        f'<details class="cd"><summary class="chead"><div class="cbar"></div>'
+        f'<div class="ct">{title}</div><div class="cs">{sub}</div>'
+        f'<span class="cinfo">i</span></summary>'
+        f'<div class="cins">{paras}<div class="chint">Klik judul lagi untuk '
+        f'menutup</div></div></details>', unsafe_allow_html=True)
 
 
 def result(txt):
@@ -423,13 +513,19 @@ ICON = {  # ikon sederhana untuk kartu KPI (viewBox 24x24)
 }
 
 
-def kpi(col, label, value, unit, sub, icon="heart"):
+def kpi(col, label, value, unit, sub, icon="heart", tone=0, desc="", pct=None):
+    """Kartu KPI: klik untuk membuka penjelasan angkanya."""
+    vis = (f'<div class="kring" style="--p:{max(0, min(100, pct)):.0f}"></div>'
+           if pct is not None else
+           f'<div class="kico"><svg viewBox="0 0 24 24" fill="currentColor" '
+           f'style="color:var(--t2)"><path d="{ICON[icon]}"/></svg></div>')
+    pop = f'<div class="kpop">{desc}</div>' if desc else ""
     col.markdown(
-        f'<div class="kpi"><div class="kico"><svg viewBox="0 0 24 24" '
-        f'fill="{PRIMARY}"><path d="{ICON[icon]}"/></svg></div>'
+        f'<details class="kpi t{tone}"><summary>{vis}'
         f'<div class="kl">{label}</div>'
         f'<div class="kv">{value}<small>{unit}</small></div>'
-        f'<div class="ks">{sub}</div></div>', unsafe_allow_html=True)
+        f'<div class="ks">{sub}</div></summary>{pop}</details>',
+        unsafe_allow_html=True)
 
 
 def insight(page, title, big, bigsub, rows, pill):
@@ -743,15 +839,29 @@ def page_overview():
                 "kelompok kecil yang ragu.")
     with cr:
         k = st.columns(5, gap="small")
-        kpi(k[0], "Ulasan", idn(n), "", "dari 11.401 data mentah", "chat")
+        kpi(k[0], "Ulasan", idn(n), "", "dari 11.401 data mentah", "chat", 0,
+            "Jumlah ulasan yang dipakai setelah pembersihan. Dari "
+            "<b>11.401</b> ulasan mentah, sisanya dibuang karena kosong, "
+            "ganda, atau tidak lengkap.")
         kpi(k[1], "Produk", idn(df["nama_produk"].nunique()), "",
-            f"{df['brand'].nunique()} brand", "box")
+            f"{df['brand'].nunique()} brand", "box", 1,
+            "Produk skincare berbeda yang punya ulasan, dari "
+            f"<b>{df['brand'].nunique()}</b> brand. Filter di sidebar "
+            "mengubah angka ini.")
         kpi(k[2], "Ingin beli lagi", fmt(p_yes, 0), "%",
-            f"Maybe {fmt(p_mb, 0)}% · No {fmt(p_no, 0)}%", "heart")
+            f"Maybe {fmt(p_mb, 0)}% · No {fmt(p_no, 0)}%", "heart", 2,
+            "Persentase ulasan yang menjawab <b>Yes</b> untuk niat beli "
+            "ulang. Ini variabel yang dicari penjelasnya di seluruh "
+            "dashboard.", pct=p_yes)
         kpi(k[3], "Rating rata-rata", fmt(df["rating"].mean(), 2), "/5",
-            f"median {fmt(df['rating'].median(), 1)}", "star")
+            f"median {fmt(df['rating'].median(), 1)}", "star", 3,
+            "Rata-rata bintang dari reviewer. Nilainya tinggi di hampir "
+            "semua produk, jadi rating saja kurang bisa membedakan pembeli "
+            "setia.", pct=df["rating"].mean() / 5 * 100)
         kpi(k[4], "Rekomendasi", fmt(p_rec, 0), "%",
-            f"tidak: {fmt(100 - p_rec, 0)}%", "thumb")
+            f"tidak: {fmt(100 - p_rec, 0)}%", "thumb", 4,
+            "Persentase reviewer yang merekomendasikan produknya ke orang "
+            "lain. Hasilnya sejalan dengan niat beli ulang.", pct=p_rec)
 
         r1 = st.columns([1.3, 1, 1.15], gap="small")
         with r1[0]:
@@ -775,13 +885,19 @@ def page_overview():
         with r1[1]:
             with card("r"):
                 card_head("Tipe kulit reviewer",
-                          "Satu reviewer bisa punya lebih dari satu")
+                          "Satu reviewer bisa punya lebih dari satu",
+                          ins=("Grafik ini menunjukkan siapa yang menulis ulasan. Makin besar irisannya, makin banyak reviewer dengan tipe kulit itu. Satu orang boleh punya lebih dari satu tipe kulit, jadi totalnya lebih besar dari jumlah ulasan.\n"
+                              f"Reviewer terbanyak berkulit {tipe_top.lower()}, sehingga temuan di dashboard ini paling mewakili pengalaman kelompok tersebut.\n"
+                              "Bagi Sociolla: tipe kulit dengan irisan kecil punya sedikit ulasan, jadi kesimpulannya kurang kuat. Klik tipe kulit di sidebar untuk melihat seluruh dashboard dari sudut pandang satu kelompok."))
                 donut(TIPE, [tsum[t] for t in TIPE], TIPE_COL,
                       center=f"<b>{idn(n)}</b><br>ulasan",
                       pull=[0.07 if t in pilih_tipe else 0 for t in TIPE])
         with r1[2]:
             with card("t"):
-                card_head("Keluhan kulit", "Dari 7 keluhan yang dicatat")
+                card_head("Keluhan kulit", "Dari 7 keluhan yang dicatat",
+                          ins=("Tiap batang adalah satu masalah kulit. Tampilan Disebut menunjukkan berapa persen ulasan yang membahas masalah itu. Tampilan Ingin beli lagi menunjukkan berapa persen reviewer dengan masalah itu yang mau membeli ulang produknya.\n"
+                              "Masalah yang paling sering disebut belum tentu yang paling membuat orang setia. Bandingkan dua tampilan itu.\n"
+                              "Bagi Sociolla: keluhan yang sering disebut dan punya persentase beli ulang tinggi adalah kategori yang layak didorong di rekomendasi dan promosi."))
                 v = toggle(["Disebut", "Ingin beli lagi"], "t_kel")
                 rows = []
                 for k_ in KELUHAN:
@@ -799,7 +915,10 @@ def page_overview():
         with r2[0]:
             with card("t"):
                 card_head("Brand paling banyak diulas",
-                          "Klik batang untuk memfilter brand")
+                          "Klik batang untuk memfilter brand",
+                          ins=("Tiap batang adalah satu brand. Tampilan Jumlah ulasan menunjukkan brand yang paling ramai dibicarakan. Tampilan Ingin beli lagi menunjukkan brand yang paling sering membuat pembelinya kembali (hanya brand dengan minimal 30 ulasan). Klik satu batang untuk memfilter seluruh dashboard ke brand itu.\n"
+                              "Brand dengan ulasan sedikit mudah tampak sangat bagus atau sangat buruk karena kebetulan, jadi angkanya perlu dibaca hati-hati.\n"
+                              "Bagi Sociolla: ramai dibicarakan dan sering dibeli ulang adalah dua hal berbeda. Brand yang kuat di keduanya paling aman dijadikan andalan."))
                 v = toggle(["Jumlah ulasan", "Ingin beli lagi"], "t_brand")
                 if v == "Jumlah ulasan":
                     br = df_t["brand"].value_counts().head(8).iloc[::-1]
@@ -820,13 +939,19 @@ def page_overview():
                      select=partial(pick_brand, ck))
         with r2[1]:
             with card("e"):
-                card_head("Niat beli ulang", "Ulasan yang menjawab Yes")
+                card_head("Niat beli ulang", "Ulasan yang menjawab Yes",
+                          ins=(f"Angka di tengah adalah persentase reviewer yang menjawab akan membeli lagi, yaitu {fmt(p_yes, 0)}% pada data yang sedang ditampilkan. Sisanya ragu atau tidak mau membeli lagi.\n"
+                              "Angka setinggi ini wajar, karena orang yang menulis ulasan biasanya sudah cocok dengan produknya. Kondisi seluruh pembeli kemungkinan lebih rendah.\n"
+                              "Bagi Sociolla: anggap angka ini sebagai batas atas loyalitas seluruh pelanggan. Kelompok yang ragu adalah peluang terbesar untuk ditingkatkan."))
                 gauge(round(p_yes, 1))
                 result(f"Dari {idn(n)} ulasan, Maybe {fmt(p_mb, 0)}% dan "
                        f"No {fmt(p_no, 0)}%.")
         with r2[2]:
             with card("e"):
-                card_head("Sentimen ulasan", "Dari kata positif dan negatif")
+                card_head("Sentimen ulasan", "Dari kata positif dan negatif",
+                          ins=("Setiap ulasan dibaca dari kata-katanya, lalu digolongkan sebagai positif, netral, atau negatif. Batang ini menunjukkan porsi tiap golongan.\n"
+                              "Kalau mayoritas positif, nada tulisan reviewer sejalan dengan rating tinggi yang mereka berikan.\n"
+                              "Bagi Sociolla: ulasan negatif yang jumlahnya kecil tetap berguna. Isinya biasanya menyebut penyebab ketidakpuasan yang bisa dibenahi brand."))
                 sm = (df["label_sentimen"].value_counts(normalize=True) * 100
                       ).reindex(["Positif", "Netral", "Negatif"]).fillna(0)
                 fig = go.Figure()
@@ -918,13 +1043,18 @@ def page_eda():
                             unsafe_allow_html=True)
         with r1[1]:
             with card("r"):
-                card_head("Seberapa erat dengan beli ulang?",
-                          "η: 0 = tidak ada kaitan, 1 = sangat kuat")
+                card_head("Seberapa erat dengan beli ulang?", "Makin panjang, makin erat dengan beli lagi",
+                          ins=("Setiap batang adalah satu hal yang dinilai reviewer, misalnya rating atau tekstur. Makin panjang batangnya, makin erat hal itu dengan keputusan membeli lagi. Skalanya 0 (tidak ada kaitan) sampai 1 (sangat erat).\n"
+                              "Pada seluruh data, rekomendasi, rating, dan efektivitas paling erat (sekitar 0,55 sampai 0,59). Harga hanya 0,01, artinya harga hampir tidak membedakan orang yang mau beli lagi dari yang tidak.\n"
+                              "Bagi Sociolla: orang kembali karena produknya terasa berhasil di kulit mereka. Hasil produk lebih layak ditonjolkan daripada harga."))
                 chart_efek(df, size=13)
         with r1[2]:
             with card("r"):
                 card_head("Rekomendasi dan beli ulang",
-                          "% niat beli lagi per kelompok")
+                          "% niat beli lagi per kelompok",
+                          ins=("Dua batang ini membandingkan reviewer yang merekomendasikan produk dengan yang tidak. Warna di dalam batang menunjukkan berapa persen dari mereka yang ingin, ragu, atau tidak ingin membeli lagi.\n"
+                              "Dari yang merekomendasikan, sekitar 88% ingin membeli lagi. Dari yang tidak, hanya sekitar 3%. Dua pertanyaan itu hampir selalu dijawab searah.\n"
+                              "Bagi Sociolla: rekomendasi bisa dipakai sebagai tanda awal produk yang akan dibeli ulang, tanpa menunggu data penjualan."))
                 ct = (pd.crosstab(df["rekomendasi"], df["beli_lagi"],
                                   normalize="index") * 100)
                 fig = go.Figure()
@@ -947,7 +1077,10 @@ def page_eda():
         r2 = st.columns([1.15, 1.25, 1], gap="small")
         with r2[0]:
             with card("t"):
-                card_head("Lama pemakaian", "Makin lama, makin yakin?")
+                card_head("Lama pemakaian", "Makin lama, makin yakin?",
+                          ins=("Tiap titik atau batang adalah satu kelompok lama pemakaian, dari kurang dari seminggu sampai lebih dari setahun. Tampilan persen menunjukkan siapa yang mau membeli lagi, tampilan jumlah menunjukkan berapa banyak reviewernya.\n"
+                              "Pemakai lebih dari setahun hampir semuanya (sekitar 95%) ingin membeli lagi, tetapi kelompok ini kecil. Ulasan terbanyak datang dari pemakai kurang dari seminggu, jadi yang tercermin di data adalah kesan awal.\n"
+                              "Bagi Sociolla: pengalaman jangka panjang masih jarang dicatat. Mengajak pembeli menulis ulasan lagi setelah beberapa bulan akan melengkapi gambarannya."))
                 v = toggle(["% ingin beli lagi", "Jumlah ulasan"], "t_lama")
                 if v.startswith("%"):
                     g = df.groupby("lama_penggunaan")["beli_lagi"].apply(
@@ -980,8 +1113,10 @@ def page_eda():
                 plot(fig)
         with r2[1]:
             with card("t"):
-                card_head("Bandingkan skor tiap kelompok",
-                          "Rata-rata skor menurut niat beli ulang")
+                card_head("Bandingkan skor tiap kelompok", "Rata-rata bintang (1-5) per kelompok",
+                          ins=("Skor di sini adalah bintang 1 sampai 5 yang diberikan reviewer. Pilih penilaiannya di tombol: rating keseluruhan, efektivitas, tekstur, kemasan, atau kualitas harga. Tiap titik adalah rata-rata bintang dari reviewer yang menjawab Yes (mau beli lagi), Maybe (ragu), atau No (tidak).\n"
+                              "Kalau jarak antar titik lebar, penilaian itu sangat membedakan pembeli setia dari yang tidak. Kalau titiknya berdekatan, penilaian itu hampir sama di semua kelompok.\n"
+                              "Bagi Sociolla: penilaian dengan jarak terlebar adalah yang paling menentukan, jadi layak dipantau dan ditingkatkan lebih dulu."))
                 v = toggle(list(VAR_CMP), "t_cmp")
                 mu = df.groupby("beli_lagi")[VAR_CMP[v]].mean()
                 orde = [x for x in ["No", "Maybe", "Yes"] if x in mu.index]
@@ -1006,7 +1141,10 @@ def page_eda():
         with r2[2]:
             with card("r"):
                 card_head("Kata yang sering muncul",
-                          "% ulasan yang memuatnya")
+                          "% ulasan yang memuatnya",
+                          ins=("Setiap kotak adalah satu kata yang sering dipakai reviewer. Makin besar kotaknya, makin banyak ulasan yang menyebut kata itu.\n"
+                              "Kata-kata ini menunjukkan hal yang paling ingin dibahas reviewer tentang produk skincare.\n"
+                              "Bagi Sociolla: kata yang sering muncul bisa dipakai sebagai bahan judul, deskripsi produk, dan filter pencarian yang sesuai dengan cara pelanggan berbicara."))
                 if tk is not None:
                     t = tk.head(10)
                     treemap(t["kata"].tolist(), t["persen_review"].tolist())
@@ -1058,8 +1196,10 @@ def page_model():
         # ---------------- klasifikasi
         with m1[0]:
             with card("m"):
-                card_head("Supervised · Klasifikasi",
-                          "Random Forest menebak niat beli ulang")
+                card_head("Supervised · Klasifikasi", "Komputer menebak siapa yang akan membeli lagi",
+                          ins=("Di sini komputer diminta menebak apakah seorang reviewer akan membeli lagi (Yes), ragu (Maybe), atau tidak (No), hanya dari isi ulasannya. Tab Akurasi menunjukkan seberapa sering tebakannya benar. Tab Peubah penting menunjukkan hal yang paling dipakai komputer untuk menebak. Tab Matriks menunjukkan tebakan yang tepat dan yang meleset.\n"
+                              "Akurasinya 86%, hanya sedikit di atas tebakan asal semua Yes yang sudah benar 85%. Penyebabnya, hampir semua reviewer menjawab Yes. Komputer jarang berhasil mengenali yang ragu atau tidak mau.\n"
+                              "Bagi Sociolla: model ini belum cukup untuk memprediksi pelanggan yang akan pergi. Pakailah sebagai petunjuk arah, dan kumpulkan lebih banyak ulasan dari yang tidak puas."))
                 v = toggle(["Akurasi", "Peubah penting", "Matriks"], "t_klas")
                 if v == "Akurasi":
                     nm = ks["analisis"].map(SHORT).tolist()
@@ -1118,8 +1258,10 @@ def page_model():
         # ---------------- FAMD
         with m1[1]:
             with card("m"):
-                card_head("Unsupervised · FAMD",
-                          "Peta kemiripan ulasan (angka + kategori)")
+                card_head("Unsupervised · FAMD", "Peta ulasan: yang mirip letaknya berdekatan",
+                          ins=("FAMD meringkas banyak informasi tentang satu ulasan (bintang, jawaban, lama pakai) menjadi dua sumbu supaya bisa digambar sebagai peta. Tiap titik di peta adalah satu ulasan, dan ulasan yang mirip letaknya berdekatan. Tab Ragam menunjukkan seberapa banyak informasi yang ditangkap tiap sumbu. Tab Peubah menunjukkan apa yang membentuk sumbu itu.\n"
+                              "Sumbu mendatar dibentuk oleh rating dan penilaian lain, jadi bisa dibaca sebagai tingkat kepuasan. Sumbu tegak didominasi niat beli ulang.\n"
+                              "Bagi Sociolla: kepuasan dan niat membeli lagi bergerak bersama. Meningkatkan kepuasan reviewer adalah jalan paling langsung untuk meningkatkan pembelian ulang."))
                 v = toggle(["Peta ulasan", "Ragam", "Peubah"], "t_famd")
                 d1 = float(ev["persen_ragam"].iloc[0])
                 if v == "Peta ulasan":
@@ -1187,8 +1329,10 @@ def page_model():
         # ---------------- association
         with m2[0]:
             with card("m"):
-                card_head("Unsupervised · Association rules",
-                          "Pola yang sering muncul bersamaan")
+                card_head("Unsupervised · Association rules", "Pola yang sering muncul bersamaan",
+                          ins=("Analisis ini mencari hal-hal yang sering muncul bersamaan dalam satu ulasan, misalnya dua kata yang selalu dipakai berpasangan. Angka di ujung batang (lift) menunjukkan seberapa kuat pasangan itu. Angka 1 berarti kebetulan, makin besar makin kuat. Tab di atas memilih jenis pola yang dilihat: kata, pemicu ketidakpuasan, atau tier harga.\n"
+                              "Pasangan dengan angka besar menunjukkan hal yang hampir selalu dibahas bersamaan oleh reviewer.\n"
+                              "Bagi Sociolla: pasangan kata ini bisa dipakai untuk memahami topik yang saling terkait, misalnya sebagai dasar bundling produk atau konten edukasi."))
                 AN = {"Kata bersamaan": "A_kata_bersamaan",
                       "Pemicu tidak puas": "C_pemicu_ketidakpuasan",
                       "Tier harga": "D_tier_harga"}
@@ -1210,8 +1354,10 @@ def page_model():
         # ---------------- clustering
         with m2[1]:
             with card("m"):
-                card_head("Unsupervised · Clustering",
-                          "K-Means mengelompokkan produk yang mirip")
+                card_head("Unsupervised · Clustering", "Produk yang mirip dikelompokkan",
+                          ins=("Clustering mengelompokkan produk yang punya skor mirip. Tiap titik adalah satu produk, dan klik titiknya untuk melihat nama produknya. Warna menunjukkan kelompoknya.\n"
+                              "Produk di kelompok pertama punya persentase beli ulang sekitar 89%, dan di kelompok kedua sekitar 78%. Batas antar kelompoknya tidak tegas (nilai silhouette 0,23), jadi bacalah sebagai kecenderungan.\n"
+                              "Bagi Sociolla: produk di kelompok yang beli ulangnya lebih rendah layak dilihat lebih dekat, untuk mencari apa yang kurang dibanding produk di kelompok yang kuat."))
                 v = toggle(["Peta produk", "Profil", "Silhouette"], "t_clu")
                 cl_["klaster"] = "Klaster " + cl_["cluster"].astype(str)
                 g = cl_.groupby("klaster").agg(
@@ -1350,7 +1496,10 @@ def page_insight():
         with mid[0]:
             with card("q"):
                 card_head("Faktor penentu beli ulang",
-                          "η: 0 = tidak ada kaitan, 1 = sangat kuat")
+                          "η: 0 = tidak ada kaitan, 1 = sangat kuat",
+                          ins=("Grafik ini merangkum hal yang paling erat dengan keputusan membeli lagi. Makin panjang batang, makin erat kaitannya (skala 0 sampai 1).\n"
+                              "Penilaian kepuasan, yaitu rekomendasi, rating, dan efektivitas, paling dekat dengan niat membeli lagi. Harga dan lama pakai hampir tidak berkaitan di data ini.\n"
+                              "Bagi Sociolla: belum ada bukti bahwa produk murah atau mahal lebih sering dibeli ulang. Fokus pada hasil produk lebih sesuai dengan data."))
                 chart_efek(d, size=10)
         with mid[1]:
             with card("q"):
