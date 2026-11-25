@@ -292,6 +292,23 @@ section[data-testid="stSidebar"] [data-testid="stPills"] button[data-testid="stB
   background:__BLUSH__ !important; border-color:__PRIMARY__ !important; color:__PRIMARY__ !important; }
 [data-testid="stSegmentedControl"] button p { font-size:.82rem !important; }
 
+/* ---------- keadaan kosong, tombol peringkat, pill ---------- */
+.empty { margin-top:1rem; padding:1.4rem 1.6rem; background:#fff; border:1px dashed __PINK2__; border-radius:1.1rem; }
+.empty-t { font-family:'Playfair Display',serif; font-size:1.4rem; font-weight:700; color:__INK__; }
+.empty-s { margin-top:.4rem; font-size:.95rem; color:__MUTED__; line-height:1.45; max-width:34rem; }
+.st-key-reset_empty button { margin-top:.8rem; border:1px solid __PRIMARY__ !important; color:__PRIMARY__ !important; background:#fff !important; }
+.st-key-btn_prod { padding-top:1.1rem; }
+.st-key-btn_prod button { width:100%; background:__PRIMARY__ !important; color:#fff !important; border:0 !important; border-radius:.8rem;
+  min-height:2.6rem; font-weight:700; box-shadow:0 6px 16px rgba(226,59,94,.25); }
+.st-key-btn_prod button p { color:#fff !important; font-size:.92rem !important; }
+.st-key-btn_prod button:hover { background:__DEEP__ !important; }
+section[data-testid="stSidebar"] [data-testid="stPills"] button, section[data-testid="stSidebar"] [data-testid="stPills"] [role="button"] {
+  background:#3C2D32 !important; border:1px solid #58444B !important; color:#F1E6E9 !important; }
+section[data-testid="stSidebar"] [data-testid="stPills"] button[aria-checked="true"], section[data-testid="stSidebar"] [data-testid="stPills"] button[kind="pillsActive"],
+section[data-testid="stSidebar"] [data-testid="stPills"] button[data-testid="stBaseButton-pillsActive"] {
+  background:__PRIMARY__ !important; border-color:__PRIMARY__ !important; color:#fff !important; }
+section[data-testid="stSidebar"] [data-baseweb="tag"] { max-width:100%; background:__PRIMARY__; font-size:.74rem; }
+
 /* ---------- penjelasan kartu (klik judul) ---------- */
 .cd { position:relative; }
 .cd > summary { list-style:none; cursor:pointer; position:relative; }
@@ -569,7 +586,7 @@ def ring(pct, text):
 
 
 def hbar(labels, values, color=None, text=None, colors=None, key=None,
-         select=None):
+         select=None, hover=None):
     """Bar horizontal dengan warna bergradasi; data urut naik."""
     text = text or [f"{v:.0f}%" for v in values]
     fig = go.Figure(go.Bar(
@@ -577,13 +594,15 @@ def hbar(labels, values, color=None, text=None, colors=None, key=None,
         marker_color=colors or ramp(values), text=text,
         textposition="outside", cliponaxis=False,
         textfont=dict(size=12, color=INK),
-        hovertemplate="%{y}: %{text}<extra></extra>"))
+        customdata=hover or [""] * len(values),
+        hovertemplate="%{y}: %{text}<br>%{customdata}<extra></extra>"))
     fig.update_xaxes(visible=False, range=[0, max(values) * 1.3])
     fig.update_yaxes(dtick=1)
     return plot(fig, key=key, select=select)
 
 
-def lolli(labels, values, colors=None, text=None, vmax=None, size=15):
+def lolli(labels, values, colors=None, text=None, vmax=None, size=15,
+          hover=None):
     """Lollipop horizontal: batang tipis dengan titik di ujungnya."""
     text = text or [f"{v:.0f}%" for v in values]
     colors = colors or ramp(values)
@@ -595,7 +614,8 @@ def lolli(labels, values, colors=None, text=None, vmax=None, size=15):
         textposition="middle right", textfont=dict(size=12, color=INK),
         cliponaxis=False, showlegend=False,
         marker=dict(size=size, color=colors, line=dict(color="#fff", width=2.5)),
-        hovertemplate="%{y}: %{text}<extra></extra>")
+        customdata=hover or [""] * len(values),
+        hovertemplate="%{y}: %{text}<br>%{customdata}<extra></extra>")
     fig.update_xaxes(visible=False, range=[0, (vmax or max(values)) * 1.3])
     fig.update_yaxes(dtick=1)
     plot(fig)
@@ -658,8 +678,8 @@ def efek_hubungan(d):
         ssb = sum(len(v) * (v.mean() - gm) ** 2 for _, v in x.groupby(y))
         sst = ((x - gm) ** 2).sum()
         e = float(np.sqrt(ssb / sst)) if sst else 0.0
-        (harga if nama == "Harga" else rows).append((nama, e))
-    rows.append(("Harga", max(e for _, e in harga)))
+        (harga if nama == "Harga" else rows).append((nama, e, "eta"))
+    rows.append(("Harga", max(e for _, e, _m in harga), "eta"))
     for col, nama in [("rekomendasi", "Rekomendasi"),
                       ("lama_penggunaan", "Lama pakai")]:
         ct = pd.crosstab(d[col], y).values.astype(float)
@@ -667,16 +687,17 @@ def efek_hubungan(d):
         exp = ct.sum(1, keepdims=True) * ct.sum(0, keepdims=True) / n
         chi2 = ((ct - exp) ** 2 / exp).sum()
         den = n * max(min(ct.shape) - 1, 1)
-        rows.append((nama, float(np.sqrt(chi2 / den))))
-    return pd.DataFrame(rows, columns=["Peubah", "Kekuatan"]).sort_values(
-        "Kekuatan")
+        rows.append((nama, float(np.sqrt(chi2 / den)), "Cramér's V"))
+    return pd.DataFrame(rows, columns=["Peubah", "Kekuatan", "Metode"]
+                        ).sort_values("Kekuatan")
 
 
 def chart_efek(d, size=15):
     ef = efek_hubungan(d)
     warna = [GREY if p == "Harga" else PRIMARY for p in ef["Peubah"]]
     lolli(ef["Peubah"].tolist(), ef["Kekuatan"].round(2).tolist(),
-          text=[fmt(v, 2) for v in ef["Kekuatan"]], colors=warna, size=size)
+          text=[fmt(v, 2) for v in ef["Kekuatan"]], colors=warna, size=size,
+          hover=[f"Dihitung dengan {m_}" for m_ in ef["Metode"]])
     return ef
 
 
@@ -705,6 +726,31 @@ if df_all is None:
     st.error("File `data/data_bersih.csv` belum ada.")
     st.stop()
 
+# Data tidak punya kolom jenis produk, jadi dikelompokkan dari kata di nama produk.
+JENIS_RULES = [
+    ("Pembersih wajah", ("remover", "wipes", "tissue", "micellar", "cleanser",
+                         "cleansing", "foam")),
+    ("Perawatan bibir", ("lip", "balm")),
+    ("Masker & pad", ("mask", "pad")),
+    ("Jerawat, pori & eksfoliasi", ("patch", "clay stick", "peeling")),
+    ("Tabir surya", ("sun", "uv", "spf")),
+    ("Toner & mist", ("toner", "priming water")),
+    ("Serum & essence", ("serum", "ampoule", "essence", "booster")),
+    ("Pelembap", ("cream", "creme", "moistur", "lotion", "ointment")),
+]
+
+
+def jenis_produk(nama):
+    n = str(nama).lower()
+    for label, kata in JENIS_RULES:
+        if any(k in n for k in kata):
+            return label
+    return "Lainnya"
+
+
+df_all["jenis"] = df_all["nama_produk"].map(jenis_produk)
+JENIS = sorted(df_all["jenis"].unique())
+
 if "page" not in st.session_state:
     st.session_state["page"] = PAGES[0]
 page = st.session_state["page"]
@@ -718,6 +764,7 @@ def set_page(name):
 def reset_filters():
     st.session_state["f_tipe"] = []
     st.session_state["f_brand"] = []
+    st.session_state["f_jenis"] = []
     st.session_state["reset_n"] = st.session_state.get("reset_n", 0) + 1
 
 
@@ -757,6 +804,7 @@ with st.sidebar:
                 unsafe_allow_html=True)
     st.session_state.setdefault("f_tipe", [])
     st.session_state.setdefault("f_brand", [])
+    st.session_state.setdefault("f_jenis", [])
     st.markdown('<div class="side-l">Tipe kulit</div>', unsafe_allow_html=True)
     try:
         pilih_tipe = st.pills("Tipe kulit", TIPE, selection_mode="multi",
@@ -765,14 +813,23 @@ with st.sidebar:
         pilih_tipe = st.multiselect("Tipe kulit", TIPE, placeholder="Semua",
                                     key="f_tipe")
     pilih_tipe = list(pilih_tipe or [])
-    pilih_brand = st.multiselect("Brand", sorted(df_all["brand"].unique()),
-                                 placeholder="Semua", key="f_brand")
+    # pilihan brand dan jenis saling menyesuaikan, supaya tidak ada kombinasi kosong
+    _sj = [j for j in st.session_state.get("f_jenis", []) if j in JENIS]
+    _all_b = sorted(df_all["brand"].unique())
+    _bopt = (sorted(df_all[df_all["jenis"].isin(_sj)]["brand"].unique())
+             if _sj else _all_b)
+    _sb = [b for b in st.session_state.get("f_brand", []) if b in _bopt]
+    _jopt = (sorted(df_all[df_all["brand"].isin(_sb)]["jenis"].unique())
+             if _sb else JENIS)
+    _sj = [j for j in _sj if j in _jopt]
+    st.session_state["f_brand"], st.session_state["f_jenis"] = _sb, _sj
+    pilih_brand = st.multiselect("Brand", _bopt, placeholder="Semua",
+                                 key="f_brand")
+    pilih_jenis = st.multiselect("Jenis produk", _jopt, placeholder="Semua",
+                                 key="f_jenis")
     st.button("Hapus filter", key="reset", on_click=reset_filters,
-              disabled=not (pilih_tipe or pilih_brand))
+              disabled=not (pilih_tipe or pilih_brand or pilih_jenis))
     st.markdown(
-        '<div class="how"><b>Cara membaca</b><br>Kotak Key Insight di kiri '
-        'merangkum arti grafiknya. Filter berlaku di Overview dan Di '
-        'Balik Ulasan.</div>'
         '<div class="src">Sumber: sociolla.com (web scraping)<br>'
         'Kelompok 2 (K1) · Pengantar Sains Data</div>',
         unsafe_allow_html=True)
@@ -782,15 +839,77 @@ if pilih_tipe:
     df = df[df[[f"tipe_{t}" for t in pilih_tipe]].sum(axis=1) > 0]
 if pilih_brand:
     df = df[df["brand"].isin(pilih_brand)]
-filtered = bool(pilih_tipe or pilih_brand)
-# data untuk grafik brand: hanya difilter tipe kulit, supaya brand lain tetap bisa diklik
-df_t = (df_all[df_all[[f"tipe_{t}" for t in pilih_tipe]].sum(axis=1) > 0]
-        if pilih_tipe else df_all)
+if pilih_jenis:
+    df = df[df["jenis"].isin(pilih_jenis)]
+filtered = bool(pilih_tipe or pilih_brand or pilih_jenis)
+# data untuk grafik brand: tidak difilter brand, supaya brand lain tetap bisa diklik
+df_t = df_all
+if pilih_tipe:
+    df_t = df_t[df_t[[f"tipe_{t}" for t in pilih_tipe]].sum(axis=1) > 0]
+if pilih_jenis:
+    df_t = df_t[df_t["jenis"].isin(pilih_jenis)]
 reset_n = st.session_state.get("reset_n", 0)
 
 
+def empty_state():
+    st.markdown(
+        '<div class="empty"><div class="empty-t">Belum ada ulasan untuk '
+        'kombinasi filter ini</div><div class="empty-s">Pilihan di sidebar '
+        'tidak saling bertemu di data. Hapus salah satu filter untuk melihat '
+        'grafiknya lagi.</div></div>', unsafe_allow_html=True)
+    st.button("Hapus semua filter", key="reset_empty", on_click=reset_filters)
+
+
+def tampil_produk():
+    d = df
+    if len(d) == 0:
+        st.info("Belum ada ulasan untuk kombinasi filter ini.")
+        return
+    urut = toggle(["Paling banyak beli lagi", "Paling banyak diulas"], "t_prod")
+    g = d.groupby(["nama_produk", "brand", "jenis"]).agg(
+        ulasan=("beli_lagi", "size"), beli=("beli_lagi", pct_yes),
+        rating=("rating", "mean")).reset_index()
+    if urut.startswith("Paling banyak beli"):
+        g = g[g["ulasan"] >= 30].sort_values(["beli", "ulasan"],
+                                             ascending=False)
+    else:
+        g = g.sort_values(["ulasan", "beli"], ascending=False)
+    g = g.head(15).reset_index(drop=True)
+    g.insert(0, "No", g.index + 1)
+    g.columns = ["No", "Produk", "Brand", "Jenis produk", "Ulasan",
+                 "Beli lagi (%)", "Rating"]
+    cfg = {}
+    try:
+        cfg = {"Beli lagi (%)": st.column_config.ProgressColumn(
+                   "Beli lagi (%)", min_value=0, max_value=100, format="%.0f%%"),
+               "Rating": st.column_config.NumberColumn("Rating",
+                                                       format="%.2f")}
+    except Exception:
+        pass
+    for kw in ({"width": "stretch"}, {"use_container_width": True}, {}):
+        try:
+            st.dataframe(g, hide_index=True, column_config=cfg, **kw)
+            break
+        except TypeError:
+            continue
+    st.caption("Ulasan dikumpulkan sekitar 60 per produk, jadi jumlah ulasan "
+               "belum menggambarkan seberapa laris sebuah produk. Peringkat "
+               "beli lagi hanya memuat produk dengan minimal 30 ulasan. "
+               "Daftar mengikuti filter di sidebar.")
+
+
+def buka_produk():
+    dlg = getattr(st, "dialog", None) or getattr(st, "experimental_dialog",
+                                                  None)
+    if dlg:
+        dlg("Peringkat produk", width="large")(tampil_produk)()
+    else:
+        with st.expander("Peringkat produk", expanded=True):
+            tampil_produk()
+
+
 def header(title, sub):
-    a, b = st.columns([3, 2.4])
+    a, b, c = st.columns([3, 2.3, 1.1])
     a.markdown(f'<div class="hdr"><div class="ttl">{title}</div>'
                f'<div class="sub">{sub}</div></div>', unsafe_allow_html=True)
     src = df if (filtered and page in PAGES[:2]) else df_all
@@ -800,6 +919,10 @@ def header(title, sub):
              f'<div class="chip"><b>{src["nama_produk"].nunique()}</b>produk</div>'
              f'<div class="chip"><b>{src["brand"].nunique()}</b>brand</div>')
     b.markdown(f'<div class="chips">{chips}</div>', unsafe_allow_html=True)
+    if page in PAGES[:2]:
+        with c:
+            if st.button("Peringkat produk", key="btn_prod"):
+                buka_produk()
 
 
 # ================================================================ HALAMAN 1
@@ -808,7 +931,7 @@ def page_overview():
            "Apa yang membuat orang membeli skincare yang sama lagi, "
            "dilihat dari ulasan Sociolla")
     if len(df) == 0:
-        st.warning("Tidak ada ulasan yang cocok dengan filter.")
+        empty_state()
         return
     n, p_yes = len(df), pct_yes(df["beli_lagi"])
     p_no = (df["beli_lagi"] == "No").mean() * 100
@@ -888,7 +1011,7 @@ def page_overview():
                           "Satu reviewer bisa punya lebih dari satu",
                           ins=("Grafik ini menunjukkan siapa yang menulis ulasan. Makin besar irisannya, makin banyak reviewer dengan tipe kulit itu. Satu orang boleh punya lebih dari satu tipe kulit, jadi totalnya lebih besar dari jumlah ulasan.\n"
                               f"Reviewer terbanyak berkulit {tipe_top.lower()}, sehingga temuan di dashboard ini paling mewakili pengalaman kelompok tersebut.\n"
-                              "Bagi Sociolla: tipe kulit dengan irisan kecil punya sedikit ulasan, jadi kesimpulannya kurang kuat. Klik tipe kulit di sidebar untuk melihat seluruh dashboard dari sudut pandang satu kelompok."))
+                              "Saran: tipe kulit dengan irisan kecil punya sedikit ulasan, jadi kesimpulannya kurang kuat. Klik tipe kulit di sidebar untuk melihat seluruh dashboard dari sudut pandang satu kelompok."))
                 donut(TIPE, [tsum[t] for t in TIPE], TIPE_COL,
                       center=f"<b>{idn(n)}</b><br>ulasan",
                       pull=[0.07 if t in pilih_tipe else 0 for t in TIPE])
@@ -897,7 +1020,7 @@ def page_overview():
                 card_head("Keluhan kulit", "Dari 7 keluhan yang dicatat",
                           ins=("Tiap batang adalah satu masalah kulit. Tampilan Disebut menunjukkan berapa persen ulasan yang membahas masalah itu. Tampilan Ingin beli lagi menunjukkan berapa persen reviewer dengan masalah itu yang mau membeli ulang produknya.\n"
                               "Masalah yang paling sering disebut belum tentu yang paling membuat orang setia. Bandingkan dua tampilan itu.\n"
-                              "Bagi Sociolla: keluhan yang sering disebut dan punya persentase beli ulang tinggi adalah kategori yang layak didorong di rekomendasi dan promosi."))
+                              "Saran: keluhan yang sering disebut dan punya persentase beli ulang tinggi adalah kategori yang layak didorong di rekomendasi dan promosi."))
                 v = toggle(["Disebut", "Ingin beli lagi"], "t_kel")
                 rows = []
                 for k_ in KELUHAN:
@@ -916,9 +1039,10 @@ def page_overview():
             with card("t"):
                 card_head("Brand paling banyak diulas",
                           "Klik batang untuk memfilter brand",
-                          ins=("Tiap batang adalah satu brand. Tampilan Jumlah ulasan menunjukkan brand yang paling ramai dibicarakan. Tampilan Ingin beli lagi menunjukkan brand yang paling sering membuat pembelinya kembali (hanya brand dengan minimal 30 ulasan). Klik satu batang untuk memfilter seluruh dashboard ke brand itu.\n"
-                              "Brand dengan ulasan sedikit mudah tampak sangat bagus atau sangat buruk karena kebetulan, jadi angkanya perlu dibaca hati-hati.\n"
-                              "Bagi Sociolla: ramai dibicarakan dan sering dibeli ulang adalah dua hal berbeda. Brand yang kuat di keduanya paling aman dijadikan andalan."))
+                          ins=("Tiap batang adalah satu brand. Tampilan Jumlah ulasan menunjukkan berapa ulasan yang terkumpul dari brand itu. Tampilan Ingin beli lagi menunjukkan brand yang paling sering membuat pembelinya kembali (hanya brand dengan minimal 30 ulasan). Klik satu batang untuk memfilter seluruh dashboard ke brand itu, dan arahkan kursor untuk melihat jenis produk terkuatnya.\n"
+                              "Ulasan dikumpulkan sekitar 60 per produk, jadi brand dengan banyak ulasan umumnya hanya punya lebih banyak produk dalam data. Jumlah ulasan belum menunjukkan brand mana yang lebih laris. Persentase beli lagi lebih layak dipakai untuk membandingkan brand.\n"
+                              "Saran: bandingkan dua brand pada jenis produk yang sama dengan filter Jenis produk, lalu buka Peringkat produk untuk melihat produk mana yang paling sering dibeli ulang."))
+
                 v = toggle(["Jumlah ulasan", "Ingin beli lagi"], "t_brand")
                 if v == "Jumlah ulasan":
                     br = df_t["brand"].value_counts().head(8).iloc[::-1]
@@ -935,14 +1059,22 @@ def page_overview():
                     pal = [c if b_ in pilih_brand else "#F2D3DA"
                            for b_, c in zip(labs, pal)]
                 ck = f"brand_{reset_n}_{v[:3]}"
+                bj = (df_t.groupby(["brand", "jenis"])["beli_lagi"]
+                      .agg([pct_yes, "size"]).reset_index())
+                bj = bj[bj["size"] >= 20].sort_values(
+                    "pct_yes", ascending=False).drop_duplicates(
+                    "brand").set_index("brand")
+                hov = [f"Paling kuat di {bj.loc[b_, 'jenis']} "
+                       f"({bj.loc[b_, 'pct_yes']:.0f}% beli lagi)"
+                       if b_ in bj.index else "" for b_ in labs]
                 hbar(labs, vals, text=txt, colors=pal, key=ck,
-                     select=partial(pick_brand, ck))
+                     select=partial(pick_brand, ck), hover=hov)
         with r2[1]:
             with card("e"):
                 card_head("Niat beli ulang", "Ulasan yang menjawab Yes",
                           ins=(f"Angka di tengah adalah persentase reviewer yang menjawab akan membeli lagi, yaitu {fmt(p_yes, 0)}% pada data yang sedang ditampilkan. Sisanya ragu atau tidak mau membeli lagi.\n"
                               "Angka setinggi ini wajar, karena orang yang menulis ulasan biasanya sudah cocok dengan produknya. Kondisi seluruh pembeli kemungkinan lebih rendah.\n"
-                              "Bagi Sociolla: anggap angka ini sebagai batas atas loyalitas seluruh pelanggan. Kelompok yang ragu adalah peluang terbesar untuk ditingkatkan."))
+                              "Saran: anggap angka ini sebagai batas atas loyalitas seluruh pelanggan. Kelompok yang ragu adalah peluang terbesar untuk ditingkatkan."))
                 gauge(round(p_yes, 1))
                 result(f"Dari {idn(n)} ulasan, Maybe {fmt(p_mb, 0)}% dan "
                        f"No {fmt(p_no, 0)}%.")
@@ -951,7 +1083,7 @@ def page_overview():
                 card_head("Sentimen ulasan", "Dari kata positif dan negatif",
                           ins=("Setiap ulasan dibaca dari kata-katanya, lalu digolongkan sebagai positif, netral, atau negatif. Batang ini menunjukkan porsi tiap golongan.\n"
                               "Kalau mayoritas positif, nada tulisan reviewer sejalan dengan rating tinggi yang mereka berikan.\n"
-                              "Bagi Sociolla: ulasan negatif yang jumlahnya kecil tetap berguna. Isinya biasanya menyebut penyebab ketidakpuasan yang bisa dibenahi brand."))
+                              "Saran: ulasan negatif yang jumlahnya kecil tetap berguna. Isinya biasanya menyebut penyebab ketidakpuasan yang bisa dibenahi brand."))
                 sm = (df["label_sentimen"].value_counts(normalize=True) * 100
                       ).reindex(["Positif", "Netral", "Negatif"]).fillna(0)
                 fig = go.Figure()
@@ -985,7 +1117,7 @@ def page_eda():
            "Dari data mentah sampai pola awal, lengkap dengan faktor yang "
            "paling erat dengan beli ulang")
     if len(df) == 0:
-        st.warning("Tidak ada ulasan yang cocok dengan filter.")
+        empty_state()
         return
     sel = load_csv("seleksi_peubah.csv")
     tk = load_csv("top_kata.csv")
@@ -1046,41 +1178,67 @@ def page_eda():
                 card_head("Seberapa erat dengan beli ulang?", "Makin panjang, makin erat dengan beli lagi",
                           ins=("Setiap batang adalah satu hal yang dinilai reviewer, misalnya rating atau tekstur. Makin panjang batangnya, makin erat hal itu dengan keputusan membeli lagi. Skalanya 0 (tidak ada kaitan) sampai 1 (sangat erat).\n"
                               "Pada seluruh data, rekomendasi, rating, dan efektivitas paling erat (sekitar 0,55 sampai 0,59). Harga hanya 0,01, artinya harga hampir tidak membedakan orang yang mau beli lagi dari yang tidak.\n"
-                              "Bagi Sociolla: orang kembali karena produknya terasa berhasil di kulit mereka. Hasil produk lebih layak ditonjolkan daripada harga."))
+                              "Metodenya: untuk penilaian bintang dan harga dipakai rasio korelasi (eta), untuk rekomendasi dan lama pakai dipakai Cramér's V. Keduanya berskala 0 sampai 1, tetapi tidak persis sebanding, jadi yang dibandingkan adalah urutannya, bukan selisih angkanya. Urutan yang sama muncul ketika dihitung ulang dengan dua metode lain (uji peringkat Kruskal-Wallis, dan Cramér's V dengan bintang sebagai kategori).\n"
+                              "Catatan: rekomendasi dan niat beli ulang adalah dua pertanyaan yang hampir sama, jadi eratnya wajar. Ini kaitan, bukan sebab-akibat. Beda dengan tab Peubah penting di Modelling, yang berasal dari model komputer.\n"
+                              "Saran: orang kembali karena produknya terasa berhasil di kulit mereka. Hasil produk lebih layak ditonjolkan daripada harga."))
                 chart_efek(df, size=13)
         with r1[2]:
-            with card("r"):
+            with card("t"):
                 card_head("Rekomendasi dan beli ulang",
                           "% niat beli lagi per kelompok",
-                          ins=("Dua batang ini membandingkan reviewer yang merekomendasikan produk dengan yang tidak. Warna di dalam batang menunjukkan berapa persen dari mereka yang ingin, ragu, atau tidak ingin membeli lagi.\n"
-                              "Dari yang merekomendasikan, sekitar 88% ingin membeli lagi. Dari yang tidak, hanya sekitar 3%. Dua pertanyaan itu hampir selalu dijawab searah.\n"
-                              "Bagi Sociolla: rekomendasi bisa dipakai sebagai tanda awal produk yang akan dibeli ulang, tanpa menunggu data penjualan."))
-                ct = (pd.crosstab(df["rekomendasi"], df["beli_lagi"],
-                                  normalize="index") * 100)
-                fig = go.Figure()
-                for cls in ["Yes", "Maybe", "No"]:
-                    if cls in ct.columns:
-                        fig.add_bar(
-                            name=cls, x=["Merekomendasikan" if i == "Yes"
-                                         else "Tidak" for i in ct.index],
-                            y=ct[cls].tolist(), marker_color=BELI_COLORS[cls],
-                            text=[f"{cls} {v:.0f}%" if v >= 8 else ""
-                                  for v in ct[cls]], textposition="inside",
-                            insidetextanchor="middle",
-                            textfont=dict(color="#fff" if cls != "Maybe"
-                                          else INK, size=13),
-                            hovertemplate="%{x}: %{y:.1f}%<extra>" + cls
-                            + "</extra>")
-                fig.update_layout(barmode="stack", bargap=0.3, showlegend=False)
-                fig.update_yaxes(visible=False)
-                plot(fig)
+                          ins=("Tiga tampilan, dipilih lewat tombol. Rekomendasi membandingkan reviewer yang merekomendasikan produk dengan yang tidak, dengan warna yang menunjukkan niat beli ulang mereka. Jenis produk menunjukkan berapa persen reviewer yang mau membeli lagi untuk tiap jenis produk (angka dalam kurung adalah jumlah ulasan). Brand per jenis menunjukkan brand yang unggul di jenis tertentu, dan hanya memuat kombinasi dengan minimal 30 ulasan.\n"
+                              "Dari yang merekomendasikan, sekitar 88% ingin membeli lagi. Dari yang tidak, hanya sekitar 3%. Antar jenis produk, selisihnya kecil karena hampir semua reviewer puas, jadi perbandingan brand paling adil dilakukan di dalam satu jenis produk.\n"
+                              "Saran: dua brand yang bersaing sebaiknya dibandingkan pada jenis produk yang sama. Pakai filter Jenis produk di sidebar, lalu lihat brand mana yang unggul."))
+                v = toggle(["Rekomendasi", "Jenis produk", "Brand per jenis"],
+                           "t_rek")
+                if v == "Rekomendasi":
+                    ct = (pd.crosstab(df["rekomendasi"], df["beli_lagi"],
+                                      normalize="index") * 100)
+                    fig = go.Figure()
+                    for cls in ["Yes", "Maybe", "No"]:
+                        if cls in ct.columns:
+                            fig.add_bar(
+                                name=cls, x=["Merekomendasikan" if i == "Yes"
+                                             else "Tidak" for i in ct.index],
+                                y=ct[cls].tolist(),
+                                marker_color=BELI_COLORS[cls],
+                                text=[f"{cls} {v_:.0f}%" if v_ >= 8 else ""
+                                      for v_ in ct[cls]],
+                                textposition="inside",
+                                insidetextanchor="middle",
+                                textfont=dict(color="#fff" if cls != "Maybe"
+                                              else INK, size=13),
+                                hovertemplate="%{x}: %{y:.1f}%<extra>" + cls
+                                + "</extra>")
+                    fig.update_layout(barmode="stack", bargap=0.3,
+                                      showlegend=False)
+                    fig.update_yaxes(visible=False)
+                    plot(fig)
+                elif v == "Jenis produk":
+                    gj = df.groupby("jenis")["beli_lagi"].agg(
+                        [pct_yes, "size"]).sort_values("pct_yes")
+                    lolli(gj.index.tolist(), gj["pct_yes"].round(0).tolist(),
+                          text=[f"{a_:.0f}% ({idn(b_)})" for a_, b_ in
+                                zip(gj["pct_yes"], gj["size"])],
+                          vmax=100, size=12)
+                else:
+                    gb = df.groupby(["brand", "jenis"])["beli_lagi"].agg(
+                        [pct_yes, "size"]).reset_index()
+                    gb = gb[gb["size"] >= 30].sort_values("pct_yes").tail(8)
+                    if len(gb):
+                        lolli((gb["brand"] + " · " + gb["jenis"]).tolist(),
+                              gb["pct_yes"].round(0).tolist(),
+                              text=[f"{a_:.0f}%" for a_ in gb["pct_yes"]],
+                              vmax=100, size=12)
+                    else:
+                        st.caption("Belum ada kombinasi dengan 30 ulasan.")
         r2 = st.columns([1.15, 1.25, 1], gap="small")
         with r2[0]:
             with card("t"):
                 card_head("Lama pemakaian", "Makin lama, makin yakin?",
                           ins=("Tiap titik atau batang adalah satu kelompok lama pemakaian, dari kurang dari seminggu sampai lebih dari setahun. Tampilan persen menunjukkan siapa yang mau membeli lagi, tampilan jumlah menunjukkan berapa banyak reviewernya.\n"
                               "Pemakai lebih dari setahun hampir semuanya (sekitar 95%) ingin membeli lagi, tetapi kelompok ini kecil. Ulasan terbanyak datang dari pemakai kurang dari seminggu, jadi yang tercermin di data adalah kesan awal.\n"
-                              "Bagi Sociolla: pengalaman jangka panjang masih jarang dicatat. Mengajak pembeli menulis ulasan lagi setelah beberapa bulan akan melengkapi gambarannya."))
+                              "Saran: pengalaman jangka panjang masih jarang dicatat. Mengajak pembeli menulis ulasan lagi setelah beberapa bulan akan melengkapi gambarannya."))
                 v = toggle(["% ingin beli lagi", "Jumlah ulasan"], "t_lama")
                 if v.startswith("%"):
                     g = df.groupby("lama_penggunaan")["beli_lagi"].apply(
@@ -1116,7 +1274,7 @@ def page_eda():
                 card_head("Bandingkan skor tiap kelompok", "Rata-rata bintang (1-5) per kelompok",
                           ins=("Skor di sini adalah bintang 1 sampai 5 yang diberikan reviewer. Pilih penilaiannya di tombol: rating keseluruhan, efektivitas, tekstur, kemasan, atau kualitas harga. Tiap titik adalah rata-rata bintang dari reviewer yang menjawab Yes (mau beli lagi), Maybe (ragu), atau No (tidak).\n"
                               "Kalau jarak antar titik lebar, penilaian itu sangat membedakan pembeli setia dari yang tidak. Kalau titiknya berdekatan, penilaian itu hampir sama di semua kelompok.\n"
-                              "Bagi Sociolla: penilaian dengan jarak terlebar adalah yang paling menentukan, jadi layak dipantau dan ditingkatkan lebih dulu."))
+                              "Saran: penilaian dengan jarak terlebar adalah yang paling menentukan, jadi layak dipantau dan ditingkatkan lebih dulu."))
                 v = toggle(list(VAR_CMP), "t_cmp")
                 mu = df.groupby("beli_lagi")[VAR_CMP[v]].mean()
                 orde = [x for x in ["No", "Maybe", "Yes"] if x in mu.index]
@@ -1144,7 +1302,7 @@ def page_eda():
                           "% ulasan yang memuatnya",
                           ins=("Setiap kotak adalah satu kata yang sering dipakai reviewer. Makin besar kotaknya, makin banyak ulasan yang menyebut kata itu.\n"
                               "Kata-kata ini menunjukkan hal yang paling ingin dibahas reviewer tentang produk skincare.\n"
-                              "Bagi Sociolla: kata yang sering muncul bisa dipakai sebagai bahan judul, deskripsi produk, dan filter pencarian yang sesuai dengan cara pelanggan berbicara."))
+                              "Saran: kata yang sering muncul bisa dipakai sebagai bahan judul, deskripsi produk, dan filter pencarian yang sesuai dengan cara pelanggan berbicara."))
                 if tk is not None:
                     t = tk.head(10)
                     treemap(t["kata"].tolist(), t["persen_review"].tolist())
@@ -1183,8 +1341,9 @@ def page_model():
                   "Datanya timpang, sekitar 85% Yes, jadi model sulit belajar "
                   "dari kelas yang kecil. Clustering membagi produk jadi dua "
                   f"kelompok ({fmt(gc.max(), 0)}% vs {fmt(gc.min(), 0)}% "
-                  f"beli ulang), tapi silhouette hanya {fmt(sil2, 2)} "
-                  "sehingga batasnya kabur."),
+                  f"beli ulang), tapi silhouette hanya {fmt(sil2, 2)}, "
+                  "tergolong rendah. Kelompoknya belum terpisah jelas, jadi "
+                  "jangan dijadikan dasar segmentasi."),
                  ("Lalu apa",
                   "Semua model menunjuk ke kepuasan sebagai pembeda. Pakai "
                   "hasilnya sebagai petunjuk arah, belum sebagai alat "
@@ -1199,7 +1358,8 @@ def page_model():
                 card_head("Supervised · Klasifikasi", "Komputer menebak siapa yang akan membeli lagi",
                           ins=("Di sini komputer diminta menebak apakah seorang reviewer akan membeli lagi (Yes), ragu (Maybe), atau tidak (No), hanya dari isi ulasannya. Tab Akurasi menunjukkan seberapa sering tebakannya benar. Tab Peubah penting menunjukkan hal yang paling dipakai komputer untuk menebak. Tab Matriks menunjukkan tebakan yang tepat dan yang meleset.\n"
                               "Akurasinya 86%, hanya sedikit di atas tebakan asal semua Yes yang sudah benar 85%. Penyebabnya, hampir semua reviewer menjawab Yes. Komputer jarang berhasil mengenali yang ragu atau tidak mau.\n"
-                              "Bagi Sociolla: model ini belum cukup untuk memprediksi pelanggan yang akan pergi. Pakailah sebagai petunjuk arah, dan kumpulkan lebih banyak ulasan dari yang tidak puas."))
+                              "Tab Peubah penting beda dengan grafik eta di halaman Di Balik Ulasan. Eta mengukur kaitan langsung di data. Peubah penting menunjukkan seberapa sering model memakai tiap hal saat menebak. Model juga banyak memakai brand dan harga untuk memilah produk, padahal kaitan langsungnya dengan niat beli lagi lemah. Jadi peringkat di tab ini menggambarkan cara kerja model, belum tentu hal yang memengaruhi pembeli.\n"
+                              "Saran: model ini belum cukup untuk memprediksi pelanggan yang akan pergi. Pakailah sebagai petunjuk arah, dan kumpulkan lebih banyak ulasan dari yang tidak puas."))
                 v = toggle(["Akurasi", "Peubah penting", "Matriks"], "t_klas")
                 if v == "Akurasi":
                     nm = ks["analisis"].map(SHORT).tolist()
@@ -1261,7 +1421,7 @@ def page_model():
                 card_head("Unsupervised · FAMD", "Peta ulasan: yang mirip letaknya berdekatan",
                           ins=("FAMD meringkas banyak informasi tentang satu ulasan (bintang, jawaban, lama pakai) menjadi dua sumbu supaya bisa digambar sebagai peta. Tiap titik di peta adalah satu ulasan, dan ulasan yang mirip letaknya berdekatan. Tab Ragam menunjukkan seberapa banyak informasi yang ditangkap tiap sumbu. Tab Peubah menunjukkan apa yang membentuk sumbu itu.\n"
                               "Sumbu mendatar dibentuk oleh rating dan penilaian lain, jadi bisa dibaca sebagai tingkat kepuasan. Sumbu tegak didominasi niat beli ulang.\n"
-                              "Bagi Sociolla: kepuasan dan niat membeli lagi bergerak bersama. Meningkatkan kepuasan reviewer adalah jalan paling langsung untuk meningkatkan pembelian ulang."))
+                              "Saran: kepuasan dan niat membeli lagi bergerak bersama. Meningkatkan kepuasan reviewer adalah jalan paling langsung untuk meningkatkan pembelian ulang."))
                 v = toggle(["Peta ulasan", "Ragam", "Peubah"], "t_famd")
                 d1 = float(ev["persen_ragam"].iloc[0])
                 if v == "Peta ulasan":
@@ -1332,7 +1492,7 @@ def page_model():
                 card_head("Unsupervised · Association rules", "Pola yang sering muncul bersamaan",
                           ins=("Analisis ini mencari hal-hal yang sering muncul bersamaan dalam satu ulasan, misalnya dua kata yang selalu dipakai berpasangan. Angka di ujung batang (lift) menunjukkan seberapa kuat pasangan itu. Angka 1 berarti kebetulan, makin besar makin kuat. Tab di atas memilih jenis pola yang dilihat: kata, pemicu ketidakpuasan, atau tier harga.\n"
                               "Pasangan dengan angka besar menunjukkan hal yang hampir selalu dibahas bersamaan oleh reviewer.\n"
-                              "Bagi Sociolla: pasangan kata ini bisa dipakai untuk memahami topik yang saling terkait, misalnya sebagai dasar bundling produk atau konten edukasi."))
+                              "Saran: pasangan kata ini bisa dipakai untuk memahami topik yang saling terkait, misalnya sebagai dasar bundling produk atau konten edukasi."))
                 AN = {"Kata bersamaan": "A_kata_bersamaan",
                       "Pemicu tidak puas": "C_pemicu_ketidakpuasan",
                       "Tier harga": "D_tier_harga"}
@@ -1356,8 +1516,8 @@ def page_model():
             with card("m"):
                 card_head("Unsupervised · Clustering", "Produk yang mirip dikelompokkan",
                           ins=("Clustering mengelompokkan produk yang punya skor mirip. Tiap titik adalah satu produk, dan klik titiknya untuk melihat nama produknya. Warna menunjukkan kelompoknya.\n"
-                              "Produk di kelompok pertama punya persentase beli ulang sekitar 89%, dan di kelompok kedua sekitar 78%. Batas antar kelompoknya tidak tegas (nilai silhouette 0,23), jadi bacalah sebagai kecenderungan.\n"
-                              "Bagi Sociolla: produk di kelompok yang beli ulangnya lebih rendah layak dilihat lebih dekat, untuk mencari apa yang kurang dibanding produk di kelompok yang kuat."))
+                              "Hasilnya lemah. Ukuran kualitas pengelompokan (silhouette) hanya 0,23. Menurut patokan umum, nilai di bawah 0,25 berarti hampir tidak ada struktur kelompok. Itu masuk akal, karena hampir semua produk berbintang 4,7 sampai 4,9, sehingga sedikit perbedaan yang bisa dipakai untuk memisahkan mereka. Kelompok pertama memang punya beli ulang lebih tinggi (sekitar 89% dibanding 78%), tetapi batas antar kelompoknya kabur.\n"
+                              "Saran: jangan jadikan kelompok ini dasar keputusan bisnis. Pakai sebagai petunjuk awal untuk menemukan produk yang perlu ditinjau, dan sebut jelas sebagai hasil yang lemah."))
                 v = toggle(["Peta produk", "Profil", "Silhouette"], "t_clu")
                 cl_["klaster"] = "Klaster " + cl_["cluster"].astype(str)
                 g = cl_.groupby("klaster").agg(
@@ -1436,8 +1596,8 @@ def page_model():
                                      range=[0, sil["silhouette"].max() * 1.3])
                     plot(fig)
                     result(f"k=2 paling baik, silhouette <b>{fmt(sil2, 3)}</b>. "
-                           "Pemisahannya lemah, jadi anggap ini segmentasi "
-                           "awal.")
+                           "Di bawah 0,25 berarti hampir tidak ada struktur "
+                           "kelompok, jadi anggap ini hasil awal yang lemah.")
 
 
 # ================================================================ HALAMAN 4
@@ -1499,7 +1659,7 @@ def page_insight():
                           "η: 0 = tidak ada kaitan, 1 = sangat kuat",
                           ins=("Grafik ini merangkum hal yang paling erat dengan keputusan membeli lagi. Makin panjang batang, makin erat kaitannya (skala 0 sampai 1).\n"
                               "Penilaian kepuasan, yaitu rekomendasi, rating, dan efektivitas, paling dekat dengan niat membeli lagi. Harga dan lama pakai hampir tidak berkaitan di data ini.\n"
-                              "Bagi Sociolla: belum ada bukti bahwa produk murah atau mahal lebih sering dibeli ulang. Fokus pada hasil produk lebih sesuai dengan data."))
+                              "Saran: belum ada bukti bahwa produk murah atau mahal lebih sering dibeli ulang. Fokus pada hasil produk lebih sesuai dengan data."))
                 chart_efek(d, size=10)
         with mid[1]:
             with card("q"):
